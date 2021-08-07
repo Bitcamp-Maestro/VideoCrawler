@@ -67,7 +67,7 @@ class VideoModul:
                                 file_extension='mp4',
                                 only_audio=True).order_by('abr').desc().first().download(storage,'%s.mp3'%(name))
 
-            # 영상 합치기 작업(mp4+mp3)
+            # 영상 합치기 작업(영상 mp4+ 음성 mp3)
             # videoclip = VideoFileClip("C:/JGBH/Project/final_project/youtube/test.mp4")
             # audioclip = AudioFileClip("C:/JGBH/Project/final_project/youtube/test.mp3")
             # videoclip.audio = audioclip
