@@ -12,3 +12,8 @@ class ServerView:
         print('3. Download Video ')
         print('4. Search Video')
         print('5. Exit')
+
+        
+    @classmethod 
+    def selectMenuNum():
+        return int(input("select Menu >> "))
