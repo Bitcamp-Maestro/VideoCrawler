@@ -50,5 +50,5 @@ class VideoCrawlerManager(Manager):
 
     def start_download(self, option: str):
         option_dict = json.load(option)
-        result = self.crawler.crawling(option_dict)
+        result = self.crawler.download(option_dict)
         self.result_handler(result, 'start_download')

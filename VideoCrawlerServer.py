@@ -4,73 +4,85 @@ from socketserver import StreamRequestHandler
 import json
 from VideoCrawlerManager import VideoCrawlerManager
 from DBManager import DBManager
+from queue import Queue
 
-class RequestHandler(StreamRequestHandler):
-    def handle(self):
-        c_sock = self.request
 
+
+
+class RequestHandler():
+
+    def __init__(self) -> None:
+        pass
+        
+    def send(self, group, send_queue):
         while True:
             try:
-                ...
-
-                msg = c_sock.recv(1024).decode('utf-8')
-                if msg == "":
-                    c_sock.close()
-                    print('정상 연결 종료', e)
+                recv = send_queue.get()
+                if recv == 'Group Changed':
+                    print(recv)
                     break
-                print("수신 : " + msg)
-                options = json.loads(msg)
-                # c_sock.send(strPacket.encode())               # 바로 재전송
-                # print("송신 : " + strPacket)                      # 화면 출력
-            except Exception as e:
-                c_sock.close()
-                print('[Error] 비정상 연결 종료', e)
 
+                for conn in group:
+                    msg = 'Client' + str(recv[2]) + ' >> ' + str(recv[0]) 
+                    if recv[1] != conn: 
+                        #client 본인이 보낸 메시지는 받을 필요가 없기 때문에 제외시킴 
+                        conn.send(bytes(msg.encode())) 
+                    else: 
+                        pass 
+            except: 
+                pass
+
+
+
+    def recv(self, conn, count, send_queue):
+        while True:
+            data = conn.recv(1024).decode()
+            print('recieved : ', data)
+            send_queue.put([data, conn, count])
 
 class VideoCrawlerServerMain:
     IP = ''
     PORT = 9999
+    count = 0
 
     def __init__(self):
         self.clientList = []
         self.handler = RequestHandler()
-        # self.server = ThreadingTCPServer((self.IP, self.PORT), self.handler)
         self.vc_manager = VideoCrawlerManager()
-        self.db_manager = DBManager()
-
+        # self.db_manager = DBManager()
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind((self.IP, self.PORT))
+        self.conn_list = []
+        self.send_queue = Queue()
+        
 
     def main(self):
-        self.server.serve_forever()
-
-#
-# def sendAll(msg, exceptSock):
-#     for connSock in clientList:
-#         if connSock != exceptSock:
-#             connSock.send(msg.encode())
-
-
-class RequestHandler(StreamRequestHandler):
-    def handle(self):  # 스레드가 담당하는 메서드
-        print("Connection From ", self.client_address)
-        connSock = self.request
-        # 클라이언트와 연결소켓을 리스트에 저장
-        # clientList.append(connSock)
+        self.server.listen(10)
+        print('server listen...')
         while True:
-            try:
-                msg = connSock.recv(1024).decode('utf-8')
-                if msg == '':
-                    connSock.close()
-                    print('{0} 정상 접속 종료'.format(self.client_address))
-                    # clientList.remove(connSock)
-                    break
-                # connSock은 제외한 다른 접속 클라이언트에 전송
-                # sendAll(msg=msg, exceptSock=connSock)
-                print("{0}으로부터 수신 : {1}".format(
-                    self.client_address, msg))
-            except Exception as e:
-                connSock.close()
-                print('{0} 비정상 접속 종료 = {1}'.format(
-                    self.client_address, e))
-                # clientList.remove(connSock)
+            self.count = self.count + 1
+            conn, addr = self.server.accept()
+            self.conn_list.append(conn)
+            print('Connected : ' + str(addr))
+
+
+            if self.count > 1:
+                self.send_queue.put('Group Changed')
+                send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
+                send_thread.start()
+
+            else:
+                send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
+                send_thread.start()
+                
+            recv_thread =  threading.Thread(target=self.handler.recv, args=(conn, self.count, self.send_queue,))
+            recv_thread.start()
+
+
+
+if __name__ == '__main__':
+    server = VideoCrawlerServerMain()
+    server.main()
+ 
 
 
