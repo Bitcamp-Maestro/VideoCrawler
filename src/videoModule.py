@@ -20,8 +20,8 @@ class VideoModul:
         body = driver.find_element_by_tag_name('body')
         body.send_keys(Keys.PAGE_DOWN)
 
-        # 스크롤 0.5초마다 한번씩 총 50번 내리기
-        for i in range(1,100):
+        # 스크롤 0.5초마다 한번씩 총 100번 내리기
+        for i in range(1,101):
             body.send_keys(Keys.PAGE_DOWN)
             time.sleep(0.5)
 
