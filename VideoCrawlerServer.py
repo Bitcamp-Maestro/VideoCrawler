@@ -25,11 +25,13 @@ class VideoCrawlerServerMain:
             self.conn_list.append(conn)
             print('Connected : ' + str(addr))
 
-            send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
-            send_thread.start()
-                
-            recv_thread =  threading.Thread(target=self.handler.recv, args=(conn, self.count, self.send_queue,))
-            recv_thread.start()
+            if self.count > 1: 
+                self.send_queue.put('Group Changed')
+                send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
+                send_thread.start()
+            else:
+                recv_thread =  threading.Thread(target=self.handler.recv, args=(conn, self.count, self.send_queue,))
+                recv_thread.start()
 
 
 if __name__ == '__main__':
