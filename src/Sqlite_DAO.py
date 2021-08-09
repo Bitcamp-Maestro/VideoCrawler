@@ -1,8 +1,12 @@
 import sqlite3
+
+from pandas.core.frame import DataFrame
+
 class SqliteDao:
-    def __init__(self, filename):
+    def __init__(self, options):
         "DB 접속 파일 인자 받기"
-        self.conn = sqlite3.connect(filename)
+        self.options = options
+        self.conn = sqlite3.connect(self.options['filename'], check_same_thread=False)
         self.cursor = self.conn.cursor()
 
     def __del__(self):
@@ -36,6 +40,10 @@ class SqliteDao:
         self.cursor.execute(insert_sql)
         self.conn.commit()
 
+    def dfToTable(self, df : DataFrame):
+        table_name = '_'.join(['video'] + df.search_keywords[0].split('+'))
+        df.to_sql(table_name, self.conn, if_exists='replace')
+
     def searchVideo(self):
         "테이블 명으로 파일을 나누고 검색한다"
         search_sql = """
@@ -45,7 +53,7 @@ class SqliteDao:
             AND name NOT LIKE 'sqlite_%'
         """
         self.cursor.execute(search_sql)
-        return self.cursor.fetchall()
+        print(self.cursor.fetchall())
         
     def deleteVideo(self, tableName):
         "테이블을 지운다"

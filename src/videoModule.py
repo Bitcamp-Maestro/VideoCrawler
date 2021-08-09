@@ -39,16 +39,18 @@ class VideoModul:
         url_list=[]
         origin_list = []
 
-        for i, a in zip(range(len(video_url)), video_url):
-            if int(times[i].text.split(':')[0]) >= options['time']:
+        for i in range(len(view)):
+            tt = times[i].text.split(':')
+            if len(tt) == 2 and int(tt[0]) >= options['time'] or \
+                len(tt) == 3 and int(tt[1]) >= options['time']:
                 continue
             title_list.append(re.sub("([^(가-힣)(ㄱ-ㅎ)(ㅏ-ㅣ)(a-z)(A-Z)(\s)])+","", title[i].text.strip()))
             view_list.append(view[i].text.strip())
             times_list.append(times[i].text.strip())
             origin_list.append("Youtube")
-            url_list.append('{}{}'.format('https://www.youtube.com',a.get('href')))
+            url_list.append('{}{}'.format('https://www.youtube.com',video_url[i].get('href')))
 
-        info = {'link':url_list, 'time':times_list, 'title':title_list, 'view':view_list, 'origin':origin_list}
+        info = {'link':url_list, 'time':times_list, 'title':title_list, 'view':view_list, 'origin':origin_list, 'search_keywords' : search_keywords}
         data = pd.DataFrame(info)
         data.to_csv("data/%s.csv"%(search_keywords))
 

@@ -1,4 +1,6 @@
 import json
+from src.Oracle_DAO import OracleDao
+from src.Sqlite_DAO import SqliteDao
 from controller.DBManager import DBManager
 from controller.VideoCrawlerManager import VideoCrawlerManager
 from src.Option import Option
@@ -6,9 +8,10 @@ from src.Option import Option
 
 class MessageHandlerServer():
 
-    def __init__(self, crawl_manager : VideoCrawlerManager, db_manager : DBManager) -> None:
-        self.crawl_manager = crawl_manager
-        self.db_manager = db_manager
+    def __init__(self) -> None:
+        self.crawl_manager = VideoCrawlerManager()
+        self.sqlite_manager = DBManager(SqliteDao, {'filename' : 'data/youtube.db'})
+        self.oracle_manager = DBManager(OracleDao, {'ips': 'localhost', 'id' : 'bitai', 'ports' : '1521', 'pws' : 'bitai'})
         
     def handle_data(self, data, conn, count, send_queue):
         num = data['menu']
@@ -16,6 +19,8 @@ class MessageHandlerServer():
             result = self.crawl_manager.start_crawling(data['data'])
             print(result)
             send_queue.put([result, conn, count])
+            self.sqlite_manager.insert(result)
+            self.oracle_manager.insert(result)
         elif num == Option.SEARCH:
             pass
         elif num == Option.SHOW_LIST:
@@ -30,7 +35,6 @@ class MessageHandlerServer():
     def send(self, group, send_queue):
         while True:
             try:
-                recv = send_queue.get()
                 recv = send_queue.get() 
                 if recv == 'Group Changed': 
                     print('Group Changed') 
