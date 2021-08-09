@@ -24,11 +24,13 @@ class VideoCrawlerServerMain:
     def main(self):
         self.server.listen(10)
         print('server listen...')
+        
         while True:
             self.count = self.count + 1
             conn, addr = self.server.accept()
             self.conn_list.append(conn)
             print('Connected : ' + str(addr))
+         
 
             send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
             send_thread.start()
