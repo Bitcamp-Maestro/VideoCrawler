@@ -6,13 +6,15 @@ from selenium.webdriver.common.keys import Keys
 import pandas as pd
 import re
 import time
+import os 
 
 
 class VideoModul:
-    def VideoCrawler(searchname):
+    def VideoCrawler(options):
         "main에서 옵션으로 searchname을 받으면 name으로 링크, 이름, 시간, 조회수 등을 DB에 저장한다."
         driver = wb.Chrome() 
-        url = ('https://www.youtube.com/results?search_query=%s&sp=EgQQASAB'%(searchname))
+        search_keywords = "+".json(options['keywords'])
+        url = ('https://www.youtube.com/results?search_query=%s&sp=EgQQASAB'%(search_keywords))
         driver.get(url)
         body = driver.find_element_by_tag_name('body')
         body.send_keys(Keys.PAGE_DOWN)
@@ -48,6 +50,9 @@ class VideoModul:
         data.to_csv("%s.csv"%(searchname))
 
 
+        return data
+
+
 
 
 
@@ -74,7 +79,7 @@ class VideoModul:
             # videoclip.write_videofile("test2.mp4")
 
 if __name__ == '__main__':
-    storage = 'C:/JGBH/Project/final_project/youtube/data'
+    storage_path = os.getcwd() + '\\data'
     searchname = input("검색할 단어를 입력하시오 :")
     VideoModul.VideoCrawler(searchname)
-    # VideoModul.VideoDownload(searchname)
+    # VideoModul.VideoDownload(searchname, storage_path)

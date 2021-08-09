@@ -1,9 +1,10 @@
-from Manager import Manager
+from .Manager import Manager
 
 
 class DBManager(Manager):
     def __init__(self, DAO: object):
-        self.dao = DAO()
+        self.dao = DAO('data/youtube.db')
+
 
     def connect(self, user, db, table):
         result_code = self.dao.connect(user, db, table)
