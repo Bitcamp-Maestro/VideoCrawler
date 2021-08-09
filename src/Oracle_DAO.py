@@ -13,6 +13,7 @@ class OracleDao:
         self.conn.close()
         
     def CreateTable(self, tableName): 
+        """ 키워드를 테이블 명으로 지정해서 테이블을 생성한다."""
         drop_sql = """
         BEGIN
             EXECUTE IMMEDIATE 'DROP TABLE video_%s';
@@ -27,6 +28,7 @@ class OracleDao:
         
         create_sql = ("""
             CREATE TABLE video_%s(
+                id NUMBER NOT NULL, 
                 link VARCHAR2(50),
                 time VARCHAR2(10),
                 title VARCHAR2(50),
@@ -35,25 +37,29 @@ class OracleDao:
                 ) 
         """%(tableName))
         self.cursor.execute(create_sql)
-        # create_seq = """CREATE SEQUENCE videos_seq START WITH 1 INCREMENT BY 1 MINVALUE 1 MAXVALUE 99999999"""
-        # self.cursor.execute(create_seq)
+        
+        drop_seq = "DROP SEQUENCE video_seq_%s"%(tableName)
+        self.cursor.execute(drop_seq)
+        create_seq = """
+            CREATE SEQUENCE video_seq_%s 
+            START WITH 1 INCREMENT BY 1 MINVALUE 1 MAXVALUE 99999999"""%(tableName)
+        self.cursor.execute(create_seq)
 
     def insertVideo(self, tableName, link, time, title, views, origin):
         """
-        데이터 사입 함수
-        tableName = 테이블 이름,
-        link = 링크
-
+        데이터 사입 함수 | tableName = 검색 키워드/
+        link = 영상링크/time = 영상길이/title = 영상이름/
+        views = 조회수/origin = 플랫폼이름
         """
         insert_sql = """
-            INSERT INTO video_%s (link, time, title, views, origin) values('%s', '%s', '%s', '%s', '%s')
-        """%(tableName, link, time, title, views, origin)
+            INSERT INTO video_%s (id, link, time, title, views, origin) 
+            values(video_seq_%s.NEXTVAL, '%s', '%s', '%s', '%s', '%s')
+        """%(tableName, tableName, link, time, title, views, origin)
         self.cursor.execute(insert_sql)
         self.conn.commit()
 
     def searchVideo(self):
-        """테이블 명으로 파일을 나누고 검색한다
-        """
+        """테이블 명으로 파일을 나누고 검색한다"""
         search_sql = "select object_name from user_objects where object_type = 'TABLE'"
             
         
