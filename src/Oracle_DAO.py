@@ -1,12 +1,18 @@
 import cx_Oracle
 import os
+from sqlalchemy import types, create_engine
+
+from pandas.core.frame import DataFrame
 
 class OracleDao:
-    def __init__(self, ips, ports, ids, pws):
+    def __init__(self, options):
         os.environ['NLS_LANG'] = ".AL32UTF8"
-        dsns = cx_Oracle.makedsn(ips, ports, "xe")
-        self.conn = cx_Oracle.connect(ids, pws, dsns)
+        self.options = options
+        dsns = cx_Oracle.makedsn(options['ips'], options['ports'], "xe")
+        self.conn = cx_Oracle.connect(options['id'], options['pws'], dsns)
         self.cursor = self.conn.cursor()
+        self.conn = create_engine('oracle+cx_oracle://%s:%s@%s:%s/?service_name=%s' % \
+            (options['id'], options['pws'], options['ips'], options['ports'], dsns))
     
     def __del__(self):
         self.cursor.close()
@@ -27,6 +33,7 @@ class OracleDao:
         self.cursor.execute(drop_sql)
         
         create_sql = ("""
+
             CREATE TABLE video_%s(
                 id NUMBER NOT NULL, 
                 link VARCHAR2(50),
@@ -58,14 +65,16 @@ class OracleDao:
         self.cursor.execute(insert_sql)
         self.conn.commit()
 
+    def dfToTable(self, df : DataFrame):
+        table_name = '_'.join(['video'] + df.search_keywords[0].split('+'))
+        df.to_sql(table_name, self.conn, if_exists='replace')
+
     def searchVideo(self):
         """테이블 명으로 파일을 나누고 검색한다"""
         search_sql = "select object_name from user_objects where object_type = 'TABLE'"
-            
+        [*rows] = self.cursor.execute(search_sql)
         
-        self.cursor.execute(search_sql)
-        print(self.cursor.fetchall())
-        return
+        return rows
         
     def deleteVideo(self, tableName):
         "테이블을 지운다"
@@ -74,6 +83,15 @@ class OracleDao:
         """%(tableName)
         self.cursor.execute(delete_sql)
         self.conn.commit()
+
+    def searchcontent(self, tableName):
+        sql = """
+            select * from video_%s
+        """%(tableName)
+        [*rows] = self.cursor.execute(sql)
+
+        return rows 
+
 
 # if __name__ == '__main__':
     # ip = '192.168.0.12'

@@ -1,7 +1,13 @@
+
+/data
+/driver
+/figures
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*$py.class
+*$py.class999ffff
 
 # C extensions
 *.so
