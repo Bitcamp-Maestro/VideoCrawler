@@ -13,9 +13,7 @@ class VideoCrawlerServerMain:
 
     def __init__(self):
         self.clientList = []
-        self.vc_manager = VideoCrawlerManager()
-        self.db_manager = DBManager(SqliteDao)
-        self.handler = MessageHandlerServer(self.vc_manager, self.db_manager)
+        self.handler = MessageHandlerServer(VideoCrawlerManager(), DBManager(SqliteDao))
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((self.IP, self.PORT))
         self.conn_list = []
@@ -30,11 +28,15 @@ class VideoCrawlerServerMain:
             conn, addr = self.server.accept()
             self.conn_list.append(conn)
             print('Connected : ' + str(addr))
-         
 
-            send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
-            send_thread.start()
-                
+            if self.count > 1: 
+                self.send_queue.put('Group Changed')
+                send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
+                send_thread.start()
+            else:                
+                send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
+                send_thread.start()
+
             recv_thread =  threading.Thread(target=self.handler.recv, args=(conn, self.count, self.send_queue,))
             recv_thread.start()
 

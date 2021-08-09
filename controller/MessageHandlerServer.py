@@ -10,11 +10,12 @@ class MessageHandlerServer():
         self.crawl_manager = crawl_manager
         self.db_manager = db_manager
         
-    def handle_data(self, data):
+    def handle_data(self, data, conn, count, send_queue):
         num = data['menu']
         if num == Option.CRAWLING:
             result = self.crawl_manager.start_crawling(data['data'])
             print(result)
+            send_queue.put([result, conn, count])
         elif num == Option.SEARCH:
             pass
         elif num == Option.SHOW_LIST:
@@ -30,6 +31,11 @@ class MessageHandlerServer():
         while True:
             try:
                 recv = send_queue.get()
+                recv = send_queue.get() 
+                if recv == 'Group Changed': 
+                    print('Group Changed') 
+                    break
+
                 for conn in group:
                     msg = 'Client' + str(recv[2]) + ' >> ' + str(recv[0])
                     conn.send(bytes(msg.encode())) 
@@ -43,4 +49,4 @@ class MessageHandlerServer():
             data['data'] = json.loads(data['data'])
             print('recieved : ', data)
             send_queue.put([data, conn, count])
-            self.handle_data(data, send_queue)
+            self.handle_data(data, conn, count, send_queue)
