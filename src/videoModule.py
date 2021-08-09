@@ -30,8 +30,7 @@ class VideoModul:
         times = soup.select('span#text')
         video_url = soup.select('a#video-title')
 
-        soup.select('span.style-scope.ytd-video-meta-block')
-        view =soup.select('div#metadata-line > span:nth-of-type(1)')
+        view = soup.select('div#metadata-line > span:nth-of-type(1)')
 
         title_list = []
         view_list = []
@@ -41,8 +40,7 @@ class VideoModul:
 
         for i in range(len(view)):
             tt = times[i].text.split(':')
-            if len(tt) == 2 and int(tt[0]) >= options['time'] or \
-                len(tt) == 3 and int(tt[1]) >= options['time']:
+            if len(tt) == 2 and int(tt[0]) >= options['time'] or len(tt) == 3:
                 continue
             title_list.append(re.sub("([^(가-힣)(ㄱ-ㅎ)(ㅏ-ㅣ)(a-z)(A-Z)(\s)])+","", title[i].text.strip()))
             view_list.append(view[i].text.strip())
