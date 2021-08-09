@@ -1,6 +1,6 @@
 import socket
 import threading
-from ClientView import ClientView
+from view.ClientView import ClientView
 from controller.MessageHandlerClient import MessageHandlerClient
 import json
 
