@@ -21,11 +21,13 @@ class VideoCrawlerServerMain:
         
         send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
         send_thread.start()
+        
         while True:
             self.count = self.count + 1
             conn, addr = self.server.accept()
             self.conn_list.append(conn)
             print('Connected : ' + str(addr))
+
             recv_thread =  threading.Thread(target=self.handler.recv, args=(conn, self.count, self.send_queue,))
             recv_thread.start()
 

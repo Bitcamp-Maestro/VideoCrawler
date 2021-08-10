@@ -36,9 +36,6 @@ class MessageHandlerServer():
         while True:
             try:
                 recv = send_queue.get() 
-                if recv == 'Group Changed': 
-                    print('Group Changed') 
-                    break
 
                 for conn in group:
                     msg = 'Client' + str(recv[2]) + ' >> ' + str(recv[0])
