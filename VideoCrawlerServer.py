@@ -19,19 +19,13 @@ class VideoCrawlerServerMain:
         self.server.listen(10)
         print('server listen...')
         
+        send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
+        send_thread.start()
         while True:
             self.count = self.count + 1
             conn, addr = self.server.accept()
             self.conn_list.append(conn)
             print('Connected : ' + str(addr))
-
-            if self.count > 1: 
-                self.send_queue.put('Group Changed')
-                send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
-                send_thread.start()
-            else:
-                send_thread = threading.Thread(target=self.handler.send, args=(self.conn_list, self.send_queue,))
-                send_thread.start()
             recv_thread =  threading.Thread(target=self.handler.recv, args=(conn, self.count, self.send_queue,))
             recv_thread.start()
 

@@ -11,7 +11,7 @@ class MessageHandlerServer():
     def __init__(self) -> None:
         self.crawl_manager = VideoCrawlerManager()
         self.sqlite_manager = DBManager(SqliteDao, {'filename' : 'data/youtube.db'})
-        self.oracle_manager = DBManager(OracleDao, {'ips': 'localhost', 'id' : 'bitai', 'ports' : '1521', 'pws' : 'bitai'})
+        # self.oracle_manager = DBManager(OracleDao, {'ips': 'localhost', 'id' : 'bitai', 'ports' : '1521', 'pws' : 'bitai'})
         
     def handle_data(self, data, conn, count, send_queue):
         num = data['menu']
@@ -20,7 +20,7 @@ class MessageHandlerServer():
             print(result)
             send_queue.put([result, conn, count])
             self.sqlite_manager.insert(result)
-            self.oracle_manager.insert(result)
+            # self.oracle_manager.insert(result)
         elif num == Option.SEARCH:
             pass
         elif num == Option.SHOW_LIST:
@@ -48,9 +48,13 @@ class MessageHandlerServer():
 
     def recv(self, conn, count, send_queue):
         while True:
-            msg = conn.recv(1024).decode()
-            data = json.loads(msg)
-            data['data'] = json.loads(data['data'])
-            print('recieved : ', data)
-            send_queue.put([data, conn, count])
-            self.handle_data(data, conn, count, send_queue)
+            try:
+
+                msg = conn.recv(1024).decode()
+                data = json.loads(msg)
+                data['data'] = json.loads(data['data'])
+                print('recieved : ', data)
+                send_queue.put([data, conn, count])
+                self.handle_data(data, conn, count, send_queue)
+            except Exception as e:
+                print(e)

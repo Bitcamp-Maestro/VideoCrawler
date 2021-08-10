@@ -20,5 +20,11 @@ class MessageHandlerClient:
 
     def recv(self, sock):
         while True:
-            recv_data = sock.recv(1024).decode()
+            try:
+            
+                recv_data = sock.recv(1024).decode()
+            except Exception as e:
+                print(e)
+                break
+                
             print(recv_data)
