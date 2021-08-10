@@ -58,11 +58,19 @@ class SqliteDao:
     def deleteVideo(self, tableName):
         "테이블을 지운다"
         delete_sql = """
-            DROP TABLE %s
+            DROP TABLE video_%s
         """%(tableName)
         self.cursor.execute(delete_sql)
         self.conn.commit()
 
+    def searchcontent(self, tableName):
+        sql = """
+            select * from video_%s
+        """%(tableName)
+        [*rows] = self.cursor.execute(sql)
+        return rows 
+        
+        
 if __name__ == '__main__':
     g_sqliteDao = SqliteDao(filename='youtube.db')
     g_sqliteDao.CreateTable(tableName="올림픽")
